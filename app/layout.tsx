@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
@@ -6,6 +6,13 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Split the Bill",
   description: "Snap the receipt, share a link, and everyone pays exactly what they had.",
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

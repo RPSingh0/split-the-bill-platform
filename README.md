@@ -4,7 +4,7 @@ Next.js app behind **Split the Bill**: a host photographs (or pastes) a restaura
 
 | | |
 |---|---|
-| Live app | `<vercel-url>` *(filled in after deployment)* |
+| Live app | <https://split-the-bill-platform.vercel.app> |
 | API | <https://split-the-bill-api.onrender.com> — interactive docs at [`/docs`](https://split-the-bill-api.onrender.com/docs) |
 | Backend repo | <https://github.com/RPSingh0/split-the-bill> |
 | AI usage notes | [AI_USAGE.md](AI_USAGE.md) |

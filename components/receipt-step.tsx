@@ -172,7 +172,7 @@ export function ReceiptStep({ onExtracted }: Props) {
             <div className="flex flex-col gap-2">
               <Label htmlFor="provider">Provider</Label>
               <Select items={PROVIDERS} value={llm.provider} onValueChange={(value) => saveLlm(value as Provider, llm.key)}>
-                <SelectTrigger id="provider" className="h-10 w-full">
+                <SelectTrigger id="provider" className="w-full data-[size=default]:h-10">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

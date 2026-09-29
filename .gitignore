@@ -1,0 +1,37 @@
+# Dependencies
+/node_modules
+
+# Next.js
+/.next/
+/out/
+/build
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Local secrets
+.env*
+!.env.example
+
+# Vercel
+.vercel
+
+# Debug logs
+npm-debug.log*
+
+# OS
+.DS_Store
+
+# WebStorm
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Claude
+.claude
+.claude/*
+
+# scratch
+/references/

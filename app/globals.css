@@ -136,6 +136,6 @@
   h1,
   h2,
   h3 {
-    @apply font-heading tracking-tight;
+    @apply font-heading tracking-tight text-balance;
   }
 }

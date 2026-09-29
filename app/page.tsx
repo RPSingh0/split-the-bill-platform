@@ -1,7 +1,11 @@
-export default function Home() {
-  return (
-    <main className="flex flex-1 items-center justify-center p-6">
-      <h1 className="text-3xl font-semibold">Split the Bill</h1>
-    </main>
-  );
+import { redirect } from "next/navigation";
+import { getToken } from "@/lib/session";
+
+export default async function Home() {
+  const token = await getToken();
+  if (token) {
+    redirect("/bills");
+  }
+
+  redirect("/login");
 }

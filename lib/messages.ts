@@ -1,3 +1,4 @@
+import { formatPaise } from "@/lib/money";
 import type { ApiError } from "@/lib/types";
 
 const MESSAGES: Record<string, string> = {
@@ -15,11 +16,18 @@ const MESSAGES: Record<string, string> = {
   BILL_NOT_OPEN: "This bill is closed, so claims can't change any more.",
   ITEM_NOT_FOUND: "That item isn't on this bill.",
   NOT_A_PARTICIPANT: "You're no longer on this bill.",
+  CANNOT_REMOVE_HOST: "The host can't be removed.",
+  NOT_OWNER: "Only the host can do this.",
+  PARTICIPANT_NOT_FOUND: "That person isn't on this bill any more.",
 };
 
 export function errorMessage(error: ApiError) {
   if (error.code === "UNITS_EXCEEDED") {
     return `Someone just took it. Only ${error.available_units} left to claim.`;
+  }
+
+  if (error.code === "HAS_UNCLAIMED") {
+    return `${formatPaise(Number(error.unclaimed_paise))} is still unclaimed. Everything must be claimed before the bill is done.`;
   }
 
   if (MESSAGES[error.code]) {

@@ -1,4 +1,5 @@
 import { ChevronDownIcon } from "lucide-react";
+import { ConfirmButton } from "@/components/confirm-button";
 import { formatPaise } from "@/lib/money";
 import type { OpenBill, SplitRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -40,9 +41,10 @@ type RowProps = {
   note: string | null;
   isMe: boolean;
   itemNames: Record<string, string>;
+  onRemove: (() => Promise<void>) | null;
 };
 
-function SummaryRow({ row, title, note, isMe, itemNames }: RowProps) {
+function SummaryRow({ row, title, note, isMe, itemNames, onRemove }: RowProps) {
   const items = itemLines(row, itemNames);
   const charges = breakdownLines(row);
 
@@ -79,12 +81,31 @@ function SummaryRow({ row, title, note, isMe, itemNames }: RowProps) {
             </div>
           ))}
         </dl>
+
+        {onRemove && (
+          <div className="px-4 pb-3">
+            <ConfirmButton
+              className="h-9 text-destructive"
+              triggerLabel={`Remove ${title}`}
+              title={`Remove ${title}?`}
+              description="Their claims go back to Unclaimed. They can join again with the link."
+              confirmLabel="Remove"
+              pendingLabel="Removing…"
+              onConfirm={onRemove}
+            />
+          </div>
+        )}
       </details>
     </li>
   );
 }
 
-export function BillSummary({ bill }: { bill: OpenBill }) {
+type Props = {
+  bill: OpenBill;
+  onRemove: ((participantId: string) => Promise<void>) | null;
+};
+
+export function BillSummary({ bill, onRemove }: Props) {
   const itemNames: Record<string, string> = {};
   for (const item of bill.items) {
     itemNames[item.id] = item.name;
@@ -111,18 +132,36 @@ export function BillSummary({ bill }: { bill: OpenBill }) {
       </div>
 
       <ul className="flex flex-col divide-y overflow-hidden rounded-xl ring-1 ring-foreground/10">
-        {bill.split.rows.map((row) => (
-          <SummaryRow
-            key={row.participant_id}
-            row={row}
-            title={row.display_name}
-            note={row.participant_id !== null && hostNames[row.participant_id] ? "Host" : null}
-            isMe={row.participant_id === bill.me.participant_id}
-            itemNames={itemNames}
-          />
-        ))}
+        {bill.split.rows.map((row) => {
+          const participantId = row.participant_id ?? "";
+          const isHost = hostNames[participantId] === true;
+
+          let removeRow = null;
+          if (onRemove && !isHost) {
+            removeRow = () => onRemove(participantId);
+          }
+
+          return (
+            <SummaryRow
+              key={participantId}
+              row={row}
+              title={row.display_name}
+              note={isHost ? "Host" : null}
+              isMe={participantId === bill.me.participant_id}
+              itemNames={itemNames}
+              onRemove={removeRow}
+            />
+          );
+        })}
         {bill.status === "open" && (
-          <SummaryRow row={unclaimed} title="Unclaimed" note={unclaimedNote} isMe={false} itemNames={itemNames} />
+          <SummaryRow
+            row={unclaimed}
+            title="Unclaimed"
+            note={unclaimedNote}
+            isMe={false}
+            itemNames={itemNames}
+            onRemove={null}
+          />
         )}
       </ul>
 

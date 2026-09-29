@@ -2,12 +2,15 @@
 
 import { CopyIcon, Share2Icon } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { toast } from "sonner";
 import useSWR, { useSWRConfig } from "swr";
+import { cancelBill, type HostActionResult, markDone, removeParticipant } from "@/app/actions/bills";
 import { notMe } from "@/app/actions/participants";
 import { BillItems } from "@/components/bill-items";
 import { BillSummary } from "@/components/bill-summary";
 import { CancelledNotice } from "@/components/cancelled-notice";
+import { ConfirmButton } from "@/components/confirm-button";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/dates";
@@ -154,6 +157,34 @@ export function BillPage({ initialBill }: { initialBill: OpenBill }) {
   });
 
   const bill = data ?? initialBill;
+  const [markingDone, setMarkingDone] = useState(false);
+
+  function applyHostResult(result: HostActionResult) {
+    if (result.error) {
+      toast.error(result.error);
+      mutate();
+      return;
+    }
+
+    if (result.bill) {
+      mutate(result.bill, { revalidate: false });
+    }
+  }
+
+  async function remove(participantId: string) {
+    applyHostResult(await removeParticipant(initialBill.slug, participantId));
+  }
+
+  async function cancel() {
+    applyHostResult(await cancelBill(initialBill.slug));
+  }
+
+  async function finish() {
+    setMarkingDone(true);
+    const result = await markDone(initialBill.slug);
+    setMarkingDone(false);
+    applyHostResult(result);
+  }
 
   async function claim(item: BillItem, units: number) {
     try {
@@ -211,6 +242,14 @@ export function BillPage({ initialBill }: { initialBill: OpenBill }) {
   }
 
   const isOpen = bill.status === "open";
+  const canManage = bill.me.is_host && isOpen;
+  const unclaimedPaise = bill.split.unclaimed.total_paise;
+
+  let doneHint = "Everything is claimed. Mark the bill done to lock the final split.";
+  if (unclaimedPaise !== 0) {
+    doneHint = `${formatPaise(unclaimedPaise)} is still unclaimed. You can mark the bill done once everything is claimed.`;
+  }
+
   let subtitle = `Hosted by ${bill.host_name}`;
   if (bill.bill_date) {
     subtitle = `${formatDate(bill.bill_date)} · ${subtitle}`;
@@ -271,7 +310,30 @@ export function BillPage({ initialBill }: { initialBill: OpenBill }) {
       )}
 
       <BillItems bill={bill} readOnly={!isOpen} onClaim={claim} />
-      <BillSummary bill={bill} />
+      <BillSummary bill={bill} onRemove={canManage ? remove : null} />
+
+      {canManage && (
+        <section className="flex flex-col gap-3 rounded-xl p-4 ring-1 ring-foreground/10">
+          <div>
+            <h2 className="font-semibold">Host controls</h2>
+            <p className="text-sm text-muted-foreground">{doneHint}</p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button className="h-10 sm:flex-1" disabled={unclaimedPaise !== 0 || markingDone} onClick={finish}>
+              {markingDone ? "Marking done…" : "Mark done"}
+            </Button>
+            <ConfirmButton
+              className="h-10 text-destructive sm:flex-1"
+              triggerLabel="Cancel bill"
+              title="Cancel this bill?"
+              description="Everyone will see that it was cancelled, and claims stop. This can't be undone."
+              confirmLabel="Cancel bill"
+              pendingLabel="Cancelling…"
+              onConfirm={cancel}
+            />
+          </div>
+        </section>
+      )}
 
       <div className="sticky bottom-0 -mx-4 mt-auto border-t bg-background/75 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-xl reduce-transparency:bg-background reduce-transparency:backdrop-blur-none">
         <p className="flex items-baseline justify-between">

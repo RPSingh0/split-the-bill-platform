@@ -16,6 +16,16 @@ export async function getToken() {
   return cookieStore.get(SESSION_COOKIE)?.value;
 }
 
+export function participantCookie(slug: string) {
+  return `stb_p_${slug}`;
+}
+
+export async function getParticipantId(slug: string) {
+  const cookieStore = await cookies();
+
+  return cookieStore.get(participantCookie(slug))?.value;
+}
+
 export async function requireUser() {
   const token = await getToken();
   if (!token) {

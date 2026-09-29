@@ -1,10 +1,5 @@
 import "server-only";
-
-export type ApiError = {
-  code: string;
-  message: string;
-  [key: string]: unknown;
-};
+import type { ApiError } from "@/lib/types";
 
 export type ApiResult<T> =
   | { ok: true; status: number; data: T }
@@ -13,8 +8,10 @@ export type ApiResult<T> =
 type Options = {
   method?: string;
   body?: unknown;
+  formData?: FormData;
   token?: string;
   participantId?: string;
+  headers?: Record<string, string>;
 };
 
 const UNREACHABLE: ApiError = {
@@ -23,7 +20,8 @@ const UNREACHABLE: ApiError = {
 };
 
 export async function fastapi<T>(path: string, options: Options = {}): Promise<ApiResult<T>> {
-  const headers: Record<string, string> = { "X-API-Key": process.env.FASTAPI_API_KEY ?? "" };
+  const headers: Record<string, string> = { ...options.headers };
+  headers["X-API-Key"] = process.env.FASTAPI_API_KEY ?? "";
 
   if (options.token) {
     headers["Authorization"] = `Bearer ${options.token}`;
@@ -33,10 +31,14 @@ export async function fastapi<T>(path: string, options: Options = {}): Promise<A
     headers["X-Participant-Id"] = options.participantId;
   }
 
-  let body: string | undefined;
+  let body: string | FormData | undefined;
   if (options.body !== undefined) {
     headers["Content-Type"] = "application/json";
     body = JSON.stringify(options.body);
+  }
+
+  if (options.formData) {
+    body = options.formData;
   }
 
   let response: Response;

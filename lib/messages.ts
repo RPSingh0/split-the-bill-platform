@@ -12,9 +12,16 @@ const MESSAGES: Record<string, string> = {
   BILL_FULL: "This bill already has 10 people, so no one else can join.",
   BILL_DONE: "This bill is already settled, so new people can't join.",
   BILL_CANCELLED: "The host cancelled this bill.",
+  BILL_NOT_OPEN: "This bill is closed, so claims can't change any more.",
+  ITEM_NOT_FOUND: "That item isn't on this bill.",
+  NOT_A_PARTICIPANT: "You're no longer on this bill.",
 };
 
 export function errorMessage(error: ApiError) {
+  if (error.code === "UNITS_EXCEEDED") {
+    return `Someone just took it. Only ${error.available_units} left to claim.`;
+  }
+
   if (MESSAGES[error.code]) {
     return MESSAGES[error.code];
   }

@@ -8,6 +8,10 @@ const MESSAGES: Record<string, string> = {
   LLM_TIMEOUT: "Reading the receipt took too long. Please try again.",
   LLM_UNAVAILABLE: "The AI provider isn't responding right now. Please try again in a moment.",
   LLM_BAD_OUTPUT: "The AI sent back something we couldn't read. Please try again.",
+  BILL_NOT_FOUND: "This bill link doesn't exist. Check the link with whoever shared it.",
+  BILL_FULL: "This bill already has 10 people, so no one else can join.",
+  BILL_DONE: "This bill is already settled, so new people can't join.",
+  BILL_CANCELLED: "The host cancelled this bill.",
 };
 
 export function errorMessage(error: ApiError) {
